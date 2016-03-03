@@ -72,7 +72,9 @@ To connect our webapplication to our PostgreSQL database, we will need to instal
 $ sudo apt-get install postgresql-client-9.3
 $ sudo apt-get install postgresql-9.3-postgis-2.1
 ```
-Now, to setup the database I would recommend following [this](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-14-04) tutorial made by DigitalOcean. This following is a short recap of their tutorial.
+Now, to setup the database I would recommend following [this](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-14-04) tutorial made by DigitalOcean. Something I personally found quite hard to grasp, is the concept of users/roles. So in short: who has access to which database etc. [This](https://www.digitalocean.com/community/tutorials/how-to-use-roles-and-manage-grant-permissions-in-postgresql-on-a-vps--2) article, again by DigitalOcean, makes it easier to understand.  
+
+This following is a short recap of their tutorials.
 
 Use your terminal to access the default postgres useraccount:
 ```sh
@@ -87,46 +89,33 @@ From the database, create the postgis extension(s).
 # CREATE EXTENSION postgis
 # CREATE EXTENSION postgis-topology
 ```
-Create a new table
-```
-# CREATE TABLE geo_layers
-(
-  gid serial NOT NULL,
-  lname character varying,
-  the_geom geometry,
-  CONSTRAINT geo_layers_pkey PRIMARY KEY (gid ),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
-  CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 4326)
-);
-```
-Load data into this table:
-```sh
-INSERT INTO geo_layers(lname, the_geom) values('polygons', '0106000020E610000002000000010300000001000000050000005A643BDF4F7D52C0917EFB3A70664440D712F241CF7E52C05F07CE19516244405F07CE19517E52C08BFD65F7E4614440696FF085C97C52C0F5B9DA8AFD6544405A643BDF4F7D52C0917EFB3A70664440010300000001000000040000005A643BDF4F7D52C0917EFB3A706644405F07CE19517E52C08BFD65F7E4614440696FF085C97C52C0F5B9DA8AFD6544405A643BDF4F7D52C0917EFB3A70664440');
+Great! You created a database with postgis extension. I would recommend writing down the database info as we will need it in our next step. To view the database info, type:
 
-INSERT INTO geo_layers(lname, the_geom) values('lines', '0105000020E610000004000000010200000002000000B97020240B7E52C0B8921D1B81644440EF552B137E7D52C0D5E76A2BF66344400102000000020000000F9C33A2B47D52C053793BC2696544409352D0ED257D52C03ECBF3E0EE644440010200000002000000EE08A7052F7E52C01CEBE2361A644440367689EAAD7D52C00F0BB5A679634440010200000002000000CA54C1A8A47E52C01092054CE06244402E56D4601A7E52C083DDB06D51624440');
+```sh
+# \conninfo
+``` 
 
-INSERT INTO geo_layers(lname, the_geom) values('points', '0104000020E61000000400000001010000005A643BDF4F7D52C0917EFB3A706644400101000000696FF085C97C52C0F5B9DA8AFD65444001010000005F07CE19517E52C08BFD65F7E46144400101000000D712F241CF7E52C05F07CE1951624440');
-```
-Exit the database:
+Next, you could manually create a new table and insert the different records into it. As most data we have is already downloaded and somewhere on our machine, loading them directly from file sounds like a better plan. How to do this? First, exit the database, next exit the postgres user. 
+
+Exit the database, exit the postgres user:
 ```sh
-$ \q
-```
-Exit the postgres user:
-```sh
+# \q
 $ exit
 ```
-
-Another way to load shapefiles, csv, geojson, or any other (spatial) data into your Postgresql database is by using the open source GDAL/OGR package. If you happen to have qGIS installed, you probably have the GDAL/OGR library as well. If not, install GDAL ( using:
+Install the open source GDAL/OGR package. If you happen to have qGIS installed, you probably have the GDAL/OGR library as well. If not, install GDAL ( using:
 ```sh
 $ sudo apt-get install gdal-bin
 ```
 Next, navigate to the folder in which you have your data stored, and execute the following command:
+
 ```sh
-$ ogr2ogr -f "PostgreSQL" PG:"host=localhost port=5432 user=postgres dbname=postgres password=5432" neighbourhoods.shp  
+$ ogr2ogr -f "PostgreSQL" PG:"host=localhost port=5432 user=postgres dbname=postgres password=5432" data.csv  
 ```
+Make sure you edit the PG string to match your own database. Also, change the data.csv to the file you want to load. In this example we will be using two datasets: bees.csv and buurten_region.shp (ESRI ShapeFile). Load both datasets into your database.
 
+You could check if the data was loaded into your database by logging into the database (sudo -i -u postgres), starting the psql program and typing \d. If the import was succesfull, you will see the layers added to the database.
 
-Something I personally found quite hard to grasp, is the concept of users/roles. So in short: who has access to which database etc. [This](https://www.digitalocean.com/community/tutorials/how-to-use-roles-and-manage-grant-permissions-in-postgresql-on-a-vps--2) article, again by DigitalOcean, makes it easier to understand.  
+Now we have our application running and our database filled, we will want to connect our server to the application.
 
 ### Connect 
 To connect our database to our application, we will have to write a little bit of code. Open the routes/index.js and edit it to look like this:
@@ -150,9 +139,9 @@ The most important part is the conString variable in which you should specify yo
 ```
 var conString = "postgres://postgres:654321@localhost:5432/postgres";
 ```
-Finding out which variables you have to fill-in can be quite a hassle. One thing you could do is login to your database and check the connection info. You can do this like this:
-```sh
-$ sudo -i -u username
-$ #psql
-$ \conninfo
-```
+
+### Handle HTTP requests
+
+You might wonder what is actually happening once you browse to your website (localhost:3000). Well, you could compare the index.js file with a switchboard. If you run the server and browse to your website, you basically request the application to give you a webpage. There is logic in the index.js file to handle these requests. Now, try to browse to another page on your website, say, localhost:3000/ilikemaps 
+
+

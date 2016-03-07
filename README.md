@@ -120,7 +120,7 @@ Now we have our application running and our database filled, we will want to con
 ### Connect 
 To connect our database to our application, we will have to write a little bit of code. Open the routes/index.js and edit it to look like this:
 
-```
+```js
 var express = require('express');
 var router = express.Router();
 

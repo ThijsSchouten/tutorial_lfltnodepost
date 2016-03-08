@@ -1,3 +1,13 @@
+Checklist:
+
+- into
+- linux
+- webdev in node/express
+- templating
+- templating image
+- 
+
+
 # Reference guide: geo web-application using node, postgis, leaflet and d3.
 
 ## Getting started

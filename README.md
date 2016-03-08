@@ -96,11 +96,11 @@ The above function will be called once we browse to localhost:3000/map and will 
 
 #### Templating
 
-Usually a website consists of many different pages. Almost all of these pages show the same header, navigation, footer, advertisements etc. Although possible, it might occur that it would be a waste of time to copy-paste these reusable elements for every page. This is where templating engines come into play. There are many templating engines and as Express uses 'jade' as default, we will do so as well. 
+Usually a website consists of many different pages. Almost all of these pages show the same header, navigation, footer, etc. Although possible, it might occur that it would be a waste of time to copy-paste these reusable elements for every page. This is where templating engines come into play. There are many templating engines and as Express uses 'jade' as default, we will do so as well. 
 
 In the app/views folder, we find three files: error.jade, index.jade and layout.jade. As you could guess, layout.jade is where we will find the basic layout. Error and index.jade are custom pages which will be rendered 'inside' the layout page. 
 
-In our previous example we 'told the router' [Xyz] to send text to our webpage. This is a little different from rendering a new page. Create a new page with the following content:
+In our previous example we 'told the router' [Xyz] to send text to our webpage. This is a little different from rendering a new page. Create a new file called map.jade with the following content:
 
 ```sh
 extends layout
@@ -109,7 +109,9 @@ block content
   h1= title
   p Welcome to #{title}
 ```
-And save it as map.jade in the views folder. Now, in our _routes/index.js file, edit our router function to look like this:
+The first line, extends layout, tells our templating engine to look for a file called 'layout'. In this file, there should be a line called 'block content'. This block should be replaced by the provided code, in our case a header and a paragraph line. Also, the 
+
+Now, in our _routes/index.js file, edit our router function to look like this:
 ```js
 /* GET map page. */
 router.get('/map', function(req, res) {
@@ -121,7 +123,8 @@ Now we can start our server using npm start, and browse to localhost:3000/map. T
 
 [Xyz image on rendering]
 
-Let's write an error handler:
+Let's write another route:
+
 
 
 
@@ -213,6 +216,25 @@ Most important is the conString variable in which you should specify your databa
 ```js
 var conString = "postgres://postgres:654321@localhost:5432/postgres";
 ```
+#### Routing
+Now, we have our connection parameters set, we want to be able to request our server for 
+
+```js
+var express = require('express');
+var router = express.Router();
+
+// Add these lines!
+var pg = require("pg");
+var conString = "postgres://username:password@ip:port/dbname";
+
+/* GET home page. */
+router.get('/', function(req, res, next) {
+  res.render('index', { title: 'Express' });
+});
+
+module.exports = router;
+``` 
+
 ##Web-app with Leaflet and D3
 
 

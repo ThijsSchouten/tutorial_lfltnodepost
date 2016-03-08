@@ -5,7 +5,6 @@ Checklist:
 - webdev in node/express
 - templating
 - templating image
-- 
 
 
 # Reference guide: geo web-application using node, postgis, leaflet and d3.
